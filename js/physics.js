@@ -40,9 +40,14 @@ export function clampVelocity(vx, vy, speed) {
   };
 }
 
+/** Fraction of the base speed added per second inside a level. */
+export const SPEED_TIME_RATE = 0.012;
+/** Fraction of the base speed added per brick hit. */
+export const SPEED_HIT_RATE = 0.0022;
+
 /** Target speed grows with time and brick hits, then stops at the cap. */
 export function rampSpeed(base, levelTime, hits, cap) {
-  const target = base * (1 + levelTime * 0.045 + hits * 0.009);
+  const target = base * (1 + levelTime * SPEED_TIME_RATE + hits * SPEED_HIT_RATE);
   return Math.min(cap, target);
 }
 
