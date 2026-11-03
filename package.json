@@ -1,0 +1,13 @@
+{
+  "name": "arkanoid",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/physics.test.js tests/version.test.js",
+    "test:e2e": "playwright test",
+    "serve": "node tests/server.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
