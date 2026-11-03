@@ -1,5 +1,5 @@
-import { FIELD_H, FIELD_W } from './physics.js?v=1.0.2';
-import { PALETTES } from './themes.js?v=1.0.2';
+import { FIELD_H, FIELD_W } from './physics.js?v=1.0.3';
+import { PALETTES } from './themes.js?v=1.0.3';
 
 const CAPSULE = {
   wide: { glyph: '↔', fill: '#2ee9ff' },
@@ -324,25 +324,6 @@ export function createRenderer(canvas) {
     }
   }
 
-  function drawSun() {
-    ctx.save();
-    ctx.translate(FIELD_W / 2, FIELD_H * 0.78);
-    const g = ctx.createLinearGradient(0, -78, 0, 10);
-    g.addColorStop(0, '#ff2bd6');
-    g.addColorStop(0.55, '#ff7a3c');
-    g.addColorStop(1, '#ffe14a');
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(0, 0, 78, Math.PI, 0);
-    ctx.fill();
-    ctx.fillStyle = '#070814';
-    for (let i = 0; i < 7; i++) {
-      const y = 6 + i * 8 + i * i * 0.35;
-      ctx.fillRect(-100, y, 200, 3 + i * 0.3);
-    }
-    ctx.restore();
-  }
-
   function drawBricks(theme, world, levelTime) {
     for (const brick of world.bricks) {
       if (!brick.alive) continue;
@@ -532,7 +513,6 @@ export function createRenderer(canvas) {
     ctx.save();
     ctx.translate(layout.ox + sx, layout.oy + sy);
     ctx.scale(layout.scale, layout.scale);
-    if (theme === 'neon') drawSun();
     if (world) {
       ctx.save();
       ctx.beginPath();

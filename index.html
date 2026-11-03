@@ -12,7 +12,7 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link rel="stylesheet" href="./css/style.css?v=1.0.2" />
+  <link rel="stylesheet" href="./css/style.css?v=1.0.3" />
 </head>
 <body data-theme="neon">
   <script>
@@ -37,11 +37,13 @@
         <button id="btn-hud-settings" type="button" aria-label="Настройки">Настройки</button>
       </div>
     </header>
-    <p id="banner" class="banner" hidden>
-      <strong id="banner-title"></strong>
-      <span id="banner-hint"></span>
-    </p>
-    <p id="toast" class="toast" hidden></p>
+    <div id="notices">
+      <p id="banner" class="banner" hidden>
+        <strong id="banner-title"></strong>
+        <span id="banner-hint"></span>
+      </p>
+      <p id="toast" class="toast" hidden></p>
+    </div>
     <div id="screens">
       <section id="screen-menu" class="screen" data-screen="menu">
         <div class="card">
@@ -152,6 +154,6 @@
     </div>
   </div>
   <noscript>Нужен JavaScript, чтобы играть.</noscript>
-  <script type="module" src="./js/main.js?v=1.0.2"></script>
+  <script type="module" src="./js/main.js?v=1.0.3"></script>
 </body>
 </html>
