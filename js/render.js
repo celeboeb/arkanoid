@@ -1,5 +1,5 @@
-import { FIELD_H, FIELD_W } from './physics.js?v=1.0.0';
-import { PALETTES } from './themes.js?v=1.0.0';
+import { FIELD_H, FIELD_W } from './physics.js?v=1.0.1';
+import { PALETTES } from './themes.js?v=1.0.1';
 
 const CAPSULE = {
   wide: { glyph: '↔', fill: '#2ee9ff' },
@@ -207,6 +207,31 @@ export function createRenderer(canvas) {
     return c;
   }
 
+  let lock = null;
+
+  function reservedHudHeight(hudEl) {
+    const measured = hudEl.getBoundingClientRect().height;
+    if (measured > 0) return measured;
+    return 56;
+  }
+
+  function placeField(cssW, cssH, hudH, dpr) {
+    let sab = 0;
+    const raw = getComputedStyle(document.body).getPropertyValue('--sab').trim();
+    if (raw.endsWith('px')) sab = Number.parseFloat(raw) || 0;
+    const availH = Math.max(80, cssH - hudH - sab);
+    const scale = Math.min(cssW / FIELD_W, availH / FIELD_H);
+    return {
+      dpr,
+      cssW,
+      cssH,
+      scale,
+      ox: (cssW - FIELD_W * scale) / 2,
+      oy: hudH + Math.max(0, (availH - FIELD_H * scale) / 2),
+      hudH,
+    };
+  }
+
   function resize(hudEl) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     const cssW = Math.max(1, canvas.clientWidth);
@@ -217,21 +242,22 @@ export function createRenderer(canvas) {
       canvas.width = bw;
       canvas.height = bh;
     }
-    const hudH = hudEl && !hudEl.hidden ? hudEl.getBoundingClientRect().height : 0;
-    let sab = 0;
-    const raw = getComputedStyle(document.body).getPropertyValue('--sab').trim();
-    if (raw.endsWith('px')) sab = Number.parseFloat(raw) || 0;
-    const availH = Math.max(80, cssH - hudH - sab);
-    const scale = Math.min(cssW / FIELD_W, availH / FIELD_H);
-    layout = {
-      dpr,
-      cssW,
-      cssH,
-      scale,
-      ox: (cssW - FIELD_W * scale) / 2,
-      oy: hudH + Math.max(0, (availH - FIELD_H * scale) / 2),
-      hudH,
-    };
+    const hudVisible = Boolean(hudEl && !hudEl.hidden);
+    const hudH = hudVisible ? reservedHudHeight(hudEl) : 0;
+    const next = placeField(cssW, cssH, hudH, dpr);
+    const usable = cssW >= 200 && cssH >= 200;
+    if (lock && usable && lock.hudVisible === hudVisible) {
+      const dw = Math.abs(cssW - lock.cssW);
+      const dh = Math.abs(cssH - lock.cssH);
+      // Score, combo and the mobile URL bar must not refit the bricks.
+      // A real rotation or a large window resize still does.
+      if (dw <= 48 && dh <= 120) {
+        layout = { ...lock.placed, dpr, cssW, cssH };
+        return layout;
+      }
+    }
+    if (usable) lock = { cssW, cssH, hudVisible, placed: next };
+    layout = next;
     return layout;
   }
 
@@ -564,6 +590,20 @@ export function createRenderer(canvas) {
     ctx.setTransform(layout.dpr, 0, 0, layout.dpr, 0, 0);
   }
 
+  function brickRects(bricks) {
+    if (!bricks) return [];
+    const { ox, oy, scale } = layout;
+    return bricks
+      .filter((brick) => brick.alive)
+      .map((brick) => ({
+        id: brick.id,
+        x: ox + brick.x * scale,
+        y: oy + brick.y * scale,
+        w: brick.w * scale,
+        h: brick.h * scale,
+      }));
+  }
+
   buildCrt();
-  return { draw, resize, toField };
+  return { draw, resize, toField, getLayout: () => layout, brickRects };
 }

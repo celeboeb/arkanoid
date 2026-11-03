@@ -96,6 +96,54 @@ test('all four themes switch from settings without restarting the run', async ({
   expect(errors).toEqual([]);
 });
 
+function sizeMap(rects) {
+  const map = {};
+  for (const rect of rects) map[rect.id] = rect;
+  return map;
+}
+
+function expectSameBrickSize(before, after) {
+  let compared = 0;
+  for (const [id, box] of Object.entries(before)) {
+    const next = after[id];
+    if (!next) continue;
+    expect(Math.abs(next.w - box.w), `width of brick ${id}`).toBeLessThan(0.35);
+    expect(Math.abs(next.h - box.h), `height of brick ${id}`).toBeLessThan(0.35);
+    compared += 1;
+  }
+  expect(compared).toBeGreaterThan(10);
+}
+
+test('brick rectangles keep their size across hits, themes and a small viewport change', async ({ page }) => {
+  const errors = trackErrors(page);
+  await page.goto('/arkanoid/?e2e=1');
+  await page.getByRole('button', { name: 'Играть' }).click();
+  await page.waitForFunction(() => window.__ARKANOID__.brickRects().length > 20);
+  await page.waitForTimeout(150);
+  const baseline = sizeMap(await page.evaluate(() => window.__ARKANOID__.brickRects()));
+
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__ARKANOID__.snapshot().score > 0);
+  for (let i = 0; i < 6; i++) {
+    const sample = sizeMap(await page.evaluate(() => window.__ARKANOID__.brickRects()));
+    expectSameBrickSize(baseline, sample);
+    await page.waitForTimeout(160);
+  }
+
+  await page.locator('#btn-hud-settings').click();
+  for (const label of ['Классика 80-х', 'Космос', 'Минимализм', 'Неоновый ретро']) {
+    await page.getByRole('button', { name: label }).click();
+    expectSameBrickSize(baseline, sizeMap(await page.evaluate(() => window.__ARKANOID__.brickRects())));
+  }
+  await page.getByRole('button', { name: 'Готово' }).click();
+
+  const viewport = page.viewportSize();
+  await page.setViewportSize({ width: viewport.width, height: viewport.height - 64 });
+  await page.waitForTimeout(250);
+  expectSameBrickSize(baseline, sizeMap(await page.evaluate(() => window.__ARKANOID__.brickRects())));
+  expect(errors).toEqual([]);
+});
+
 test('pwa manifest and service worker are served from the subpath', async ({ request }) => {
   const htmlRes = await request.get('/arkanoid/');
   expect(htmlRes.ok()).toBeTruthy();

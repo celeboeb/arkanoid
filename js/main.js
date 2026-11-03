@@ -1,10 +1,10 @@
-import { VERSION } from './version.js?v=1.0.0';
-import { SIM_DT } from './physics.js?v=1.0.0';
-import { THEME_COLOR } from './themes.js?v=1.0.0';
-import { createGame } from './game.js?v=1.0.0';
-import { createRenderer } from './render.js?v=1.0.0';
-import { createAudio } from './audio.js?v=1.0.0';
-import { loadState, saveState } from './storage.js?v=1.0.0';
+import { VERSION } from './version.js?v=1.0.1';
+import { SIM_DT } from './physics.js?v=1.0.1';
+import { THEME_COLOR } from './themes.js?v=1.0.1';
+import { createGame } from './game.js?v=1.0.1';
+import { createRenderer } from './render.js?v=1.0.1';
+import { createAudio } from './audio.js?v=1.0.1';
+import { loadState, saveState } from './storage.js?v=1.0.1';
 
 const saved = loadState();
 const settings = saved.settings;
@@ -388,6 +388,8 @@ if (new URLSearchParams(location.search).has('e2e')) {
     },
     snapshot: () => game.snapshot(),
     settings,
+    brickRects: () => renderer.brickRects(game.viewWorld()?.bricks),
+    layout: () => renderer.getLayout(),
   };
 }
 
