@@ -144,6 +144,50 @@ test('brick rectangles keep their size across hits, themes and a small viewport 
   expect(errors).toEqual([]);
 });
 
+test('bonus and level toasts sit in the center of the playfield', async ({ page }, testInfo) => {
+  const errors = trackErrors(page);
+  await page.goto('/arkanoid/?e2e=1');
+  await page.getByRole('button', { name: 'Играть' }).click();
+  await page.waitForFunction(() => window.__ARKANOID__.layout().scale > 0);
+  await expect(page.locator('#banner')).toBeVisible();
+
+  const centered = async (selector) => {
+    const metrics = await page.evaluate((sel) => {
+      const layout = window.__ARKANOID__.layout();
+      const canvas = document.getElementById('view').getBoundingClientRect();
+      const box = document.querySelector(sel).getBoundingClientRect();
+      const style = getComputedStyle(document.querySelector(sel));
+      return {
+        dx: box.x + box.width / 2 - (canvas.left + layout.centerX),
+        dy: box.y + box.height / 2 - (canvas.top + layout.centerY),
+        bottom: box.bottom,
+        paddleTop: canvas.top + layout.oy + 600 * layout.scale,
+        pointer: style.pointerEvents,
+      };
+    }, selector);
+    expect(Math.abs(metrics.dx), `${selector} horizontal center`).toBeLessThan(8);
+    expect(Math.abs(metrics.dy), `${selector} vertical center`).toBeLessThan(20);
+    expect(metrics.bottom).toBeLessThan(metrics.paddleTop - 24);
+    expect(metrics.pointer).toBe('none');
+  };
+
+  await centered('#banner');
+  await page.waitForFunction(() => !window.__ARKANOID__.snapshot().banner);
+  await expect(page.locator('#banner')).toBeHidden();
+  await page.evaluate(() => window.__ARKANOID__.announce('Лазер'));
+  await expect(page.locator('#toast')).toBeVisible();
+  await expect(page.locator('#toast')).toHaveText('Лазер');
+  await centered('#toast');
+
+  if (testInfo.project.name === 'chromium') {
+    await page.screenshot({ path: path.join(OUT, 'toast-center-desktop.png') });
+  }
+  if (testInfo.project.name === 'webkit-mobile') {
+    await page.screenshot({ path: path.join(OUT, 'toast-center-mobile.png') });
+  }
+  expect(errors).toEqual([]);
+});
+
 test('pwa manifest and service worker are served from the subpath', async ({ request }) => {
   const htmlRes = await request.get('/arkanoid/');
   expect(htmlRes.ok()).toBeTruthy();

@@ -199,46 +199,68 @@ canvas {
 }
 
 #notices {
-  position: absolute;
-  top: calc(var(--hud-band) + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed;
+  left: 0;
+  top: 0;
   z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: min(92vw, 340px);
+  width: max-content;
+  max-width: min(86vw, 320px);
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
 .banner, .toast {
+  width: max-content;
+  max-width: 100%;
   margin: 0;
+  box-sizing: border-box;
   pointer-events: none;
   text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+  border-width: 0;
+  transition: opacity 0.16s ease, visibility 0s linear 0.16s;
 }
 
-.banner {
+.banner.on, .toast.on {
+  height: auto;
+  overflow: visible;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.12s ease, visibility 0s;
+}
+
+.banner.on {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 12px;
-  background: var(--card);
-  border: 1px solid var(--stroke);
+  border-width: 1px;
+  border-style: solid;
+  background: color-mix(in srgb, var(--bg0) 62%, transparent);
+  border-color: color-mix(in srgb, var(--stroke) 70%, transparent);
 }
 
-.banner strong { font-size: 14px; }
+.banner strong { font-size: 15px; }
 .banner span { color: var(--muted); font-size: 12px; }
 
-.toast {
-  padding: 4px 12px;
+.toast.on {
+  padding: 6px 14px;
   border-radius: 999px;
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 82%, transparent);
   color: #140814;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
 }
+
+.banner.on + .toast.on { margin-top: 8px; }
 
 body[data-theme="minimal"] .toast { color: white; }
 
