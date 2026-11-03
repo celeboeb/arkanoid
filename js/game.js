@@ -7,11 +7,12 @@ import {
   launchStuck,
   rampSpeed,
   stepWorld,
-} from './physics.js?v=1.0.1';
-import { LEVELS, createBricks } from './levels.js?v=1.0.1';
-import { PALETTES } from './themes.js?v=1.0.1';
+} from './physics.js?v=1.0.2';
+import { LEVELS, createBricks } from './levels.js?v=1.0.2';
+import { PALETTES } from './themes.js?v=1.0.2';
 
-const SPEED = { calm: 265, normal: 325, fast: 400 };
+const SPEED = { calm: 230, normal: 280, fast: 340 };
+const SPEED_CAP = 1.32;
 const PADDLE_W = 86;
 const PADDLE_WIDE = 136;
 const PADDLE_NARROW = 52;
@@ -627,7 +628,7 @@ export function createGame(settings, audio, progress, onPersist) {
     for (const key of Object.keys(timers)) timers[key] = Math.max(0, timers[key] - dt);
     levelTime += dt;
     const base = baseSpeed();
-    rawSpeed = rampSpeed(base, levelTime, brickHits, base * 1.72);
+    rawSpeed = rampSpeed(base, levelTime, brickHits, base * SPEED_CAP);
     ballSpeed = rawSpeed * (timers.slow > 0 ? 0.62 : 1);
     world.paddle.w = paddleWidth();
     world.sticky = timers.sticky > 0;

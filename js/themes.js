@@ -1,11 +1,15 @@
 export const THEME_IDS = ['neon', 'classic', 'space', 'minimal'];
 
-/** 0–6 normals, 7 two-hit, 8 three-hit, 9 metal, 10 explosive. */
+/**
+ * 0–6 are the spectral rainbow in row order:
+ * red, orange, yellow, green, голубой, blue, violet.
+ * 7 two-hit, 8 three-hit, 9 metal, 10 explosive.
+ */
 export const PALETTES = {
-  neon: ['#ff2d95', '#ff6a3d', '#ffe14a', '#3dffb0', '#2ee9ff', '#6aa4ff', '#d06bff', '#f4f7ff', '#ffd36a', '#9aa3b8', '#ff4d6d'],
-  classic: ['#e23d3d', '#f07a22', '#f2c14e', '#35c85a', '#2ec6d6', '#3a6fe8', '#b45ad4', '#ece6d2', '#f0c14a', '#8e95ad', '#ff5b7a'],
-  space: ['#e07a5f', '#c45c48', '#e0a15a', '#81b36a', '#7f9ec4', '#8d74c9', '#4eaea8', '#e6d3b3', '#f2d39b', '#8d887f', '#ffb703'],
-  minimal: ['#f4a5b8', '#f7c59f', '#f6e7a8', '#b7e4c7', '#a9def9', '#c4b5fd', '#ffc6ff', '#e7e5e4', '#fde68a', '#cbd5e1', '#fda4af'],
+  neon: ['#FF2D2D', '#FF8C1A', '#FFE14A', '#3DFF6A', '#3DC8FF', '#3D5BFF', '#8B3DFF', '#F4F7FF', '#FFD36A', '#9AA3B8', '#F6F1E4'],
+  classic: ['#E02020', '#F07818', '#F0D020', '#22B83A', '#20B4E0', '#2454E0', '#7028C8', '#E8E0C8', '#E8B830', '#8E95AD', '#F4E6C0'],
+  space: ['#D04840', '#E07830', '#E0B040', '#3C9A48', '#3A94C4', '#3050B0', '#7040B0', '#E6D3B3', '#E8C878', '#8D887F', '#C47848'],
+  minimal: ['#E24B4B', '#F08A2A', '#E8C22E', '#3EAE58', '#3AADD4', '#3A62D0', '#7A45C4', '#E7E5E4', '#E8C56A', '#B0B6C0', '#E4D2B0'],
 };
 
 export const THEME_COLOR = {
