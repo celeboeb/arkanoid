@@ -1,20 +1,20 @@
-const VERSION = '1.0.2';
+const VERSION = '1.0.3';
 const CACHE = `arkanoid-${VERSION}`;
 
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './css/style.css?v=1.0.2',
-  './js/version.js?v=1.0.2',
-  './js/main.js?v=1.0.2',
-  './js/game.js?v=1.0.2',
-  './js/physics.js?v=1.0.2',
-  './js/levels.js?v=1.0.2',
-  './js/render.js?v=1.0.2',
-  './js/audio.js?v=1.0.2',
-  './js/storage.js?v=1.0.2',
-  './js/themes.js?v=1.0.2',
+  './css/style.css?v=1.0.3',
+  './js/version.js?v=1.0.3',
+  './js/main.js?v=1.0.3',
+  './js/game.js?v=1.0.3',
+  './js/physics.js?v=1.0.3',
+  './js/levels.js?v=1.0.3',
+  './js/render.js?v=1.0.3',
+  './js/audio.js?v=1.0.3',
+  './js/storage.js?v=1.0.3',
+  './js/themes.js?v=1.0.3',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];
