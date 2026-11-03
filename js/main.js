@@ -1,10 +1,10 @@
-import { VERSION } from './version.js?v=1.0.3';
-import { SIM_DT } from './physics.js?v=1.0.3';
-import { THEME_COLOR } from './themes.js?v=1.0.3';
-import { createGame } from './game.js?v=1.0.3';
-import { createRenderer } from './render.js?v=1.0.3';
-import { createAudio } from './audio.js?v=1.0.3';
-import { loadState, saveState } from './storage.js?v=1.0.3';
+import { VERSION } from './version.js?v=1.0.4';
+import { SIM_DT } from './physics.js?v=1.0.4';
+import { THEME_COLOR } from './themes.js?v=1.0.4';
+import { createGame } from './game.js?v=1.0.4';
+import { createRenderer } from './render.js?v=1.0.4';
+import { createAudio } from './audio.js?v=1.0.4';
+import { loadState, saveState } from './storage.js?v=1.0.4';
 
 const saved = loadState();
 const settings = saved.settings;
@@ -16,6 +16,7 @@ function persistProgress(progress) {
 
 const game = createGame(settings, audio, saved, persistProgress);
 const canvas = document.getElementById('view');
+const notices = document.getElementById('notices');
 const renderer = createRenderer(canvas);
 const hud = document.getElementById('hud');
 const app = document.getElementById('app');
@@ -141,11 +142,13 @@ function syncDom() {
   const fx = snap.fx.map((item) => item.label).join(' · ');
   if (els.fx.textContent !== fx) els.fx.textContent = fx;
 
-  els.banner.hidden = !snap.banner;
-  els.bannerTitle.textContent = snap.banner || '';
-  els.bannerHint.textContent = snap.hint || '';
-  els.toast.hidden = !snap.toast;
-  els.toast.textContent = snap.toast || '';
+  if (snap.banner) {
+    els.bannerTitle.textContent = snap.banner;
+    els.bannerHint.textContent = snap.hint || '';
+  }
+  els.banner.classList.toggle('on', Boolean(snap.banner));
+  if (snap.toast) els.toast.textContent = snap.toast;
+  els.toast.classList.toggle('on', Boolean(snap.toast));
 
   const record = snap.highScore.toLocaleString('ru-RU');
   if (els.menuRecord.textContent !== record) els.menuRecord.textContent = record;
@@ -394,6 +397,14 @@ if (new URLSearchParams(location.search).has('e2e')) {
   };
 }
 
+function placeNotices() {
+  const layout = renderer.getLayout();
+  if (!(layout.scale > 0)) return;
+  const rect = canvas.getBoundingClientRect();
+  notices.style.left = `${rect.left + layout.centerX}px`;
+  notices.style.top = `${rect.top + layout.centerY}px`;
+}
+
 let last = performance.now();
 let acc = 0;
 function frame(now) {
@@ -411,6 +422,7 @@ function frame(now) {
   }
   syncDom();
   geom = renderer.resize(hud);
+  placeNotices();
   renderer.draw(game);
   requestAnimationFrame(frame);
 }

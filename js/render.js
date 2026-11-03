@@ -1,5 +1,5 @@
-import { FIELD_H, FIELD_W } from './physics.js?v=1.0.3';
-import { PALETTES } from './themes.js?v=1.0.3';
+import { FIELD_H, FIELD_W } from './physics.js?v=1.0.4';
+import { PALETTES } from './themes.js?v=1.0.4';
 
 const CAPSULE = {
   wide: { glyph: '↔', fill: '#2ee9ff' },
@@ -221,14 +221,18 @@ export function createRenderer(canvas) {
     if (raw.endsWith('px')) sab = Number.parseFloat(raw) || 0;
     const availH = Math.max(80, cssH - hudH - sab);
     const scale = Math.min(cssW / FIELD_W, availH / FIELD_H);
+    const ox = (cssW - FIELD_W * scale) / 2;
+    const oy = hudH + Math.max(0, (availH - FIELD_H * scale) / 2);
     return {
       dpr,
       cssW,
       cssH,
       scale,
-      ox: (cssW - FIELD_W * scale) / 2,
-      oy: hudH + Math.max(0, (availH - FIELD_H * scale) / 2),
+      ox,
+      oy,
       hudH,
+      centerX: ox + (FIELD_W * scale) / 2,
+      centerY: oy + (FIELD_H * scale) / 2,
     };
   }
 

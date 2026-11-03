@@ -7,9 +7,9 @@ import {
   launchStuck,
   rampSpeed,
   stepWorld,
-} from './physics.js?v=1.0.3';
-import { LEVELS, createBricks } from './levels.js?v=1.0.3';
-import { PALETTES } from './themes.js?v=1.0.3';
+} from './physics.js?v=1.0.4';
+import { LEVELS, createBricks } from './levels.js?v=1.0.4';
+import { PALETTES } from './themes.js?v=1.0.4';
 
 const SPEED = { calm: 230, normal: 280, fast: 340 };
 const SPEED_CAP = 1.32;
@@ -191,7 +191,7 @@ export function createGame(settings, audio, progress, onPersist) {
     spawnStuck();
     bannerTitle = `Уровень ${index + 1} · ${LEVELS[index].name}`;
     bannerHint = LEVELS[index].hint;
-    bannerT = 1.5;
+    bannerT = 1;
     mode = 'playing';
     run = true;
   }
@@ -271,7 +271,7 @@ export function createGame(settings, audio, progress, onPersist) {
 
   function toast(text) {
     toastText = text;
-    toastT = 1.15;
+    toastT = 1;
   }
 
   function vibrate(ms) {
