@@ -1,12 +1,12 @@
-import { VERSION } from '../version.js?v=2.0.0';
-import { mountArkanoid, unmountArkanoid } from '../arkanoid/main.js?v=2.0.0';
-import { createHubAudio, haptic } from './audio.js?v=2.0.0';
-import { loadStore, saveStore } from './store.js?v=2.0.0';
-import { pipesGame } from './view-pipes.js?v=2.0.0';
-import { blocksGame } from './view-blocks.js?v=2.0.0';
-import { sokobanGame } from './view-sokoban.js?v=2.0.0';
-import { waterGame } from './view-water.js?v=2.0.0';
-import { floodGame } from './view-flood.js?v=2.0.0';
+import { VERSION } from '../version.js?v=2.1.0';
+import { mountArkanoid, unmountArkanoid } from '../arkanoid/main.js?v=2.1.0';
+import { createHubAudio, haptic } from './audio.js?v=2.1.0';
+import { loadStore, saveStore } from './store.js?v=2.1.0';
+import { pipesGame } from './view-pipes.js?v=2.1.0';
+import { blocksGame } from './view-blocks.js?v=2.1.0';
+import { sokobanGame } from './view-sokoban.js?v=2.1.0';
+import { waterGame } from './view-water.js?v=2.1.0';
+import { floodGame } from './view-flood.js?v=2.1.0';
 
 const GAMES = [pipesGame, blocksGame, sokobanGame, waterGame, floodGame];
 const BY_ID = Object.fromEntries(GAMES.map((game) => [game.id, game]));
@@ -49,7 +49,7 @@ function applyHubChrome() {
   document.documentElement.dataset.app = 'hub';
   document.body.dataset.theme = theme;
   document.body.dataset.app = 'hub';
-  if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#151a19' : '#f3efe8');
+  if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#1c1a22' : '#f7f1ea');
   const on = store.settings.sound;
   for (const button of [soundBtn, menuSound]) {
     if (!button) continue;
@@ -74,28 +74,64 @@ function arkanoidCardMeta() {
   }
 }
 
+const PREVIEWS = {
+  arcade:
+    '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="14" width="48" height="8" rx="4" fill="#f0b7a4"/><rect x="8" y="26" width="48" height="8" rx="4" fill="#f3d6a1"/><rect x="8" y="38" width="48" height="8" rx="4" fill="#a9c8e4"/><rect x="18" y="50" width="28" height="6" rx="3" fill="#6f9a86"/></svg>',
+  pipes:
+    '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 14v16h12v20" fill="none" stroke="#3f6d62" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="44" cy="46" r="6" fill="#7eb6c8"/></svg>',
+  blocks:
+    '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="14" width="16" height="16" rx="5" fill="#f0b7a4"/><rect x="28" y="14" width="16" height="16" rx="5" fill="#f3d6a1"/><rect x="28" y="32" width="16" height="16" rx="5" fill="#c9b6e4"/><rect x="46" y="32" width="10" height="16" rx="5" fill="#a9c8e4"/></svg>',
+  sokoban:
+    '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="12" y="16" width="40" height="32" rx="10" fill="#f6e7c8"/><circle cx="24" cy="32" r="7" fill="#6f9a86"/><rect x="36" y="25" width="14" height="14" rx="4" fill="#e2b97a"/></svg>',
+  water:
+    '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="12" width="14" height="40" rx="7" fill="#d5e6f4"/><rect x="16" y="30" width="10" height="20" rx="5" fill="#f0b7a4"/><rect x="36" y="12" width="14" height="40" rx="7" fill="#d5e6f4"/><rect x="38" y="22" width="10" height="28" rx="5" fill="#a9c8e4"/></svg>',
+  flood:
+    '<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="12" y="12" width="12" height="12" rx="4" fill="#f0b7a4"/><rect x="26" y="12" width="12" height="12" rx="4" fill="#f0b7a4"/><rect x="40" y="12" width="12" height="12" rx="4" fill="#f3d6a1"/><rect x="12" y="26" width="12" height="12" rx="4" fill="#f0b7a4"/><rect x="26" y="26" width="12" height="12" rx="4" fill="#b7d3c4"/><rect x="40" y="26" width="12" height="12" rx="4" fill="#b7d3c4"/><rect x="12" y="40" width="12" height="12" rx="4" fill="#a9c8e4"/><rect x="26" y="40" width="12" height="12" rx="4" fill="#b7d3c4"/><rect x="40" y="40" width="12" height="12" rx="4" fill="#c9b6e4"/></svg>',
+};
+
+function card(className, preview, kicker, title, meta, hash) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `game-card ${className}`;
+  button.innerHTML = `<span class="preview">${preview}</span><span><span class="card-kicker">${kicker}</span><span class="card-title">${title}</span><span class="card-meta">${meta}</span></span>`;
+  button.addEventListener('click', () => {
+    location.hash = hash;
+  });
+  return button;
+}
+
 function renderMenu() {
   menu.replaceChildren();
-  const arcade = document.createElement('button');
-  arcade.type = 'button';
-  arcade.className = 'game-card arcade';
-  arcade.innerHTML = `<span class="card-kicker">аркада</span><span class="card-title">Арканоид</span><span class="card-meta">${arkanoidCardMeta()}</span>`;
-  arcade.addEventListener('click', () => {
-    location.hash = '#/arkanoid';
-  });
-  menu.append(arcade);
+  menu.append(card('arcade', PREVIEWS.arcade, 'аркада', 'Арканоид', arkanoidCardMeta(), '#/arkanoid'));
   for (const game of GAMES) {
     const progress = store.games[game.id];
     const open = Math.min(game.count, progress.unlocked);
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `game-card ${game.id}`;
-    button.innerHTML = `<span class="card-kicker">головоломка</span><span class="card-title">${game.title}</span><span class="card-meta">Уровень ${Math.min(game.count, progress.level + 1)} из ${game.count} · открыто ${open}</span>`;
-    button.addEventListener('click', () => {
-      location.hash = `#/${game.id}`;
-    });
-    menu.append(button);
+    menu.append(
+      card(
+        game.id,
+        PREVIEWS[game.id],
+        'головоломка',
+        game.title,
+        `Уровень ${Math.min(game.count, progress.level + 1)} из ${game.count} · открыто ${open}`,
+        `#/${game.id}`,
+      ),
+    );
   }
+}
+
+function celebrate() {
+  const layer = document.createElement('div');
+  layer.className = 'confetti';
+  const colors = ['#f0b7a4', '#f3d6a1', '#b7d3c4', '#a9c8e4', '#c9b6e4', '#e7b4c4'];
+  for (let i = 0; i < 16; i++) {
+    const dot = document.createElement('i');
+    dot.style.left = `${12 + Math.random() * 76}%`;
+    dot.style.background = colors[i % colors.length];
+    dot.style.animationDelay = `${Math.random() * 0.18}s`;
+    layer.append(dot);
+  }
+  stage.append(layer);
+  setTimeout(() => layer.remove(), 1100);
 }
 
 function closeSheets() {
@@ -211,7 +247,8 @@ function openPuzzle(id, index, resetSnapshot) {
         document.getElementById('act-next').textContent = last ? 'В меню' : 'Дальше';
         if (live && !wasSolved) {
           audio.play('win');
-          haptic([10, 40, 14], store.settings.vibrate);
+          haptic([8, 36, 10], store.settings.vibrate);
+          celebrate();
         }
       }
       wasSolved = on;

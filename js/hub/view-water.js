@@ -1,5 +1,5 @@
-import { createHistory } from '../puzzles/history.js?v=2.0.0';
-import { WATER_COUNT, generateWater, isSolved, pour } from '../puzzles/water.js?v=2.0.0';
+import { createHistory } from '../puzzles/history.js?v=2.1.0';
+import { WATER_COUNT, generateWater, isSolved, pour } from '../puzzles/water.js?v=2.1.0';
 
 const LIQUIDS = ['#e07a7a', '#e0b15c', '#7fbf8a', '#6eb0d4', '#8d87d1', '#d58ab4', '#8fd0c6'];
 
@@ -10,7 +10,7 @@ function copy(tubes) {
 export const waterGame = {
   id: 'water',
   title: 'Water Sort',
-  blurb: 'Переливайте слои, пока в каждой колбе не останется один цвет.',
+  blurb: 'Нажмите колбу, затем другую — жидкость перельётся.',
   count: WATER_COUNT,
   win: 'Цвета разошлись по колбам',
   mount(stage, ctx) {
@@ -46,7 +46,10 @@ export const waterGame = {
           const color = tube[unit];
           if (color == null) layer.className = 'empty';
           else {
-            layer.style.background = LIQUIDS[color % LIQUIDS.length];
+            const hue = LIQUIDS[color % LIQUIDS.length];
+            layer.style.background = hue;
+            layer.style.boxShadow = 'inset 0 7px 8px rgba(255,255,255,0.35)';
+            if (unit === tube.length - 1) layer.classList.add('top');
             if (fresh && fresh.index === index && unit >= tube.length - fresh.count) layer.classList.add('fresh');
           }
           glass.append(layer);
@@ -55,7 +58,10 @@ export const waterGame = {
         button.addEventListener('click', () => choose(index));
         row.append(button);
       });
-      stage.append(row);
+      const layout = document.createElement('div');
+      layout.className = 'water-layout';
+      layout.append(row);
+      stage.append(layout);
       const solved = isSolved(tubes, cap);
       ctx.status(solved ? 'Каждая колба одного цвета' : `Переливы: ${pours}`);
       ctx.changed();

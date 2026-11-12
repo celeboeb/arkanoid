@@ -1,5 +1,5 @@
-import { FIELD_H, FIELD_W } from './physics.js?v=2.0.0';
-import { PALETTES } from './themes.js?v=2.0.0';
+import { FIELD_H, FIELD_W } from './physics.js?v=2.1.0';
+import { PALETTES } from './themes.js?v=2.1.0';
 
 const CAPSULE = {
   wide: { glyph: '↔', fill: '#2ee9ff' },
