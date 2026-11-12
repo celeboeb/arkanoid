@@ -1,10 +1,10 @@
-import { VERSION } from './version.js?v=1.0.4';
-import { SIM_DT } from './physics.js?v=1.0.4';
-import { THEME_COLOR } from './themes.js?v=1.0.4';
-import { createGame } from './game.js?v=1.0.4';
-import { createRenderer } from './render.js?v=1.0.4';
-import { createAudio } from './audio.js?v=1.0.4';
-import { loadState, saveState } from './storage.js?v=1.0.4';
+import { VERSION } from '../version.js?v=2.0.0';
+import { SIM_DT } from './physics.js?v=2.0.0';
+import { THEME_COLOR } from './themes.js?v=2.0.0';
+import { createGame } from './game.js?v=2.0.0';
+import { createRenderer } from './render.js?v=2.0.0';
+import { createAudio } from './audio.js?v=2.0.0';
+import { loadState, saveState } from './storage.js?v=2.0.0';
 
 const saved = loadState();
 const settings = saved.settings;
@@ -173,62 +173,74 @@ function syncDom() {
   if (snap.mode !== 'playing') focusedPlay = false;
 }
 
-document.getElementById('btn-play').addEventListener('click', () => {
+let active = false;
+
+function bindPress(id, fn) {
+  const el = document.getElementById(id);
+  if (!el || el.dataset.bound) return;
+  el.dataset.bound = '1';
+  el.addEventListener('click', () => {
+    if (!active) return;
+    fn();
+  });
+}
+
+bindPress('btn-play', () => {
   audio.unlock();
   game.startNewGame();
   syncDom();
 });
-document.getElementById('btn-levels').addEventListener('click', () => {
+bindPress('btn-levels', () => {
   game.mode = 'levels';
   syncDom();
 });
-document.getElementById('btn-settings').addEventListener('click', () => {
+bindPress('btn-settings', () => {
   game.openSettings();
   syncDom();
 });
-document.getElementById('btn-levels-back').addEventListener('click', () => {
+bindPress('btn-levels-back', () => {
   game.mode = 'menu';
   syncDom();
 });
-document.getElementById('btn-settings-back').addEventListener('click', () => {
+bindPress('btn-settings-back', () => {
   game.closeSettings();
   syncDom();
 });
-document.getElementById('btn-hud-settings').addEventListener('click', () => {
+bindPress('btn-hud-settings', () => {
   audio.unlock();
   game.openSettings();
   syncDom();
 });
-document.getElementById('btn-pause').addEventListener('click', () => {
+bindPress('btn-pause', () => {
   game.togglePause();
   syncDom();
 });
-document.getElementById('btn-resume').addEventListener('click', () => {
+bindPress('btn-resume', () => {
   game.togglePause();
   syncDom();
 });
-document.getElementById('btn-pause-settings').addEventListener('click', () => {
+bindPress('btn-pause-settings', () => {
   game.openSettings();
   syncDom();
 });
-document.getElementById('btn-quit').addEventListener('click', () => {
+bindPress('btn-quit', () => {
   game.toMenu();
   syncDom();
 });
-document.getElementById('btn-retry').addEventListener('click', () => {
+bindPress('btn-retry', () => {
   audio.unlock();
   game.startNewGame();
   syncDom();
 });
-document.getElementById('btn-over-menu').addEventListener('click', () => {
+bindPress('btn-over-menu', () => {
   game.toMenu();
   syncDom();
 });
-document.getElementById('btn-win-menu').addEventListener('click', () => {
+bindPress('btn-win-menu', () => {
   game.toMenu();
   syncDom();
 });
-document.getElementById('btn-win-again').addEventListener('click', () => {
+bindPress('btn-win-again', () => {
   audio.unlock();
   game.startNewGame();
   syncDom();
@@ -273,6 +285,7 @@ let dragged = false;
 let mouseDown = false;
 
 app.addEventListener('pointerdown', (event) => {
+  if (!active) return;
   audio.unlock();
   if (event.target.closest('button, input, label, a')) return;
   if (game.mode !== 'playing') return;
@@ -302,7 +315,7 @@ app.addEventListener('pointerdown', (event) => {
 });
 
 app.addEventListener('pointermove', (event) => {
-  if (game.mode !== 'playing') return;
+  if (!active || game.mode !== 'playing') return;
   if (event.pointerType === 'touch') {
     if (event.pointerId !== touchId) return;
     if (Math.hypot(event.clientX - originX, event.clientY - originY) > 8) dragged = true;
@@ -319,6 +332,7 @@ app.addEventListener('pointermove', (event) => {
 });
 
 app.addEventListener('pointerup', (event) => {
+  if (!active) return;
   if (event.pointerType === 'touch') {
     if (event.pointerId !== touchId) return;
     if (!dragged && game.mode === 'playing') game.launch();
@@ -337,6 +351,7 @@ app.addEventListener('pointercancel', () => {
 canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 
 window.addEventListener('keydown', (event) => {
+  if (!active) return;
   audio.unlock();
   if (event.code === 'Escape' && !event.repeat) {
     event.preventDefault();
@@ -361,16 +376,19 @@ window.addEventListener('keydown', (event) => {
 }, true);
 
 window.addEventListener('keyup', (event) => {
+  if (!active) return;
   if (event.code === 'ArrowLeft' || event.code === 'KeyA') game.input.left = false;
   if (event.code === 'ArrowRight' || event.code === 'KeyD') game.input.right = false;
 });
 
 window.addEventListener('blur', () => {
+  if (!active) return;
   game.input.left = false;
   game.input.right = false;
 });
 
 document.addEventListener('visibilitychange', () => {
+  if (!active) return;
   last = performance.now();
   acc = 0;
   if (document.hidden) {
@@ -378,10 +396,6 @@ document.addEventListener('visibilitychange', () => {
     syncDom();
   }
 });
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).catch(() => {});
-}
 
 if (new URLSearchParams(location.search).has('e2e')) {
   window.__ARKANOID__ = {
@@ -407,7 +421,10 @@ function placeNotices() {
 
 let last = performance.now();
 let acc = 0;
+let raf = 0;
 function frame(now) {
+  raf = 0;
+  if (!active) return;
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   if (!document.hidden) {
@@ -424,8 +441,34 @@ function frame(now) {
   geom = renderer.resize(hud);
   placeNotices();
   renderer.draw(game);
-  requestAnimationFrame(frame);
+  if (active && !raf) raf = requestAnimationFrame(frame);
 }
 
-syncDom();
-requestAnimationFrame(frame);
+const root = document.getElementById('game-arkanoid');
+
+export function mountArkanoid() {
+  active = true;
+  if (root) root.hidden = false;
+  document.body.dataset.app = 'arkanoid';
+  document.documentElement.dataset.app = 'arkanoid';
+  if (!raf) {
+    last = performance.now();
+    acc = 0;
+    raf = requestAnimationFrame(frame);
+  }
+  syncDom();
+}
+
+export function unmountArkanoid() {
+  if (!active && root?.hidden !== false) return;
+  active = false;
+  if (raf) cancelAnimationFrame(raf);
+  raf = 0;
+  game.input.left = false;
+  game.input.right = false;
+  game.input.mouseActive = false;
+  game.input.touchDx = 0;
+  game.hide();
+  syncDom();
+  if (root) root.hidden = true;
+}

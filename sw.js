@@ -1,20 +1,36 @@
-const VERSION = '1.0.4';
-const CACHE = `arkanoid-${VERSION}`;
+const VERSION = '2.0.0';
+const CACHE = `antistress-${VERSION}`;
 
 const ASSETS = [
   './',
   './index.html',
+  './arkanoid.html',
   './manifest.json',
-  './css/style.css?v=1.0.4',
-  './js/version.js?v=1.0.4',
-  './js/main.js?v=1.0.4',
-  './js/game.js?v=1.0.4',
-  './js/physics.js?v=1.0.4',
-  './js/levels.js?v=1.0.4',
-  './js/render.js?v=1.0.4',
-  './js/audio.js?v=1.0.4',
-  './js/storage.js?v=1.0.4',
-  './js/themes.js?v=1.0.4',
+  './css/hub.css?v=2.0.0',
+  './css/style.css?v=2.0.0',
+  './js/version.js?v=2.0.0',
+  './js/hub/main.js?v=2.0.0',
+  './js/hub/audio.js?v=2.0.0',
+  './js/hub/store.js?v=2.0.0',
+  './js/hub/view-pipes.js?v=2.0.0',
+  './js/hub/view-blocks.js?v=2.0.0',
+  './js/hub/view-sokoban.js?v=2.0.0',
+  './js/hub/view-water.js?v=2.0.0',
+  './js/hub/view-flood.js?v=2.0.0',
+  './js/puzzles/history.js?v=2.0.0',
+  './js/puzzles/pipes.js?v=2.0.0',
+  './js/puzzles/blocks.js?v=2.0.0',
+  './js/puzzles/sokoban.js?v=2.0.0',
+  './js/puzzles/water.js?v=2.0.0',
+  './js/puzzles/flood.js?v=2.0.0',
+  './js/arkanoid/main.js?v=2.0.0',
+  './js/arkanoid/audio.js?v=2.0.0',
+  './js/arkanoid/game.js?v=2.0.0',
+  './js/arkanoid/levels.js?v=2.0.0',
+  './js/arkanoid/physics.js?v=2.0.0',
+  './js/arkanoid/render.js?v=2.0.0',
+  './js/arkanoid/storage.js?v=2.0.0',
+  './js/arkanoid/themes.js?v=2.0.0',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];
@@ -29,7 +45,13 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE && (key.startsWith('antistress-') || key.startsWith('arkanoid-')))
+            .map((key) => caches.delete(key)),
+        ),
+      )
       .then(() => self.clients.claim()),
   );
 });

@@ -1,12 +1,12 @@
 {
-  "name": "Арканоид",
-  "short_name": "Арканоид",
-  "description": "Арканоид в браузере: уровни, бонусы и четыре темы.",
+  "name": "Антистресс",
+  "short_name": "Антистресс",
+  "description": "Спокойные головоломки и Арканоид. Без таймера и рекламы, работает офлайн.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#07060f",
-  "theme_color": "#07060f",
+  "background_color": "#f3efe8",
+  "theme_color": "#f3efe8",
   "lang": "ru",
   "icons": [
     {

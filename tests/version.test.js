@@ -14,12 +14,20 @@ test('version is shared and asset URLs stay relative', () => {
   assert.ok(!/src=["']\//.test(html));
   assert.ok(!/href=["']\//.test(html));
 
-  for (const file of fs.readdirSync(path.join(root, 'js'))) {
-    if (!file.endsWith('.js')) continue;
-    const text = fs.readFileSync(path.join(root, 'js', file), 'utf8');
-    const imports = text.match(/from '\.\/[^']+'/g) || [];
+  function walk(dir, out = []) {
+    for (const name of fs.readdirSync(dir)) {
+      const full = path.join(dir, name);
+      if (fs.statSync(full).isDirectory()) walk(full, out);
+      else if (name.endsWith('.js')) out.push(full);
+    }
+    return out;
+  }
+
+  for (const file of walk(path.join(root, 'js'))) {
+    const text = fs.readFileSync(file, 'utf8');
+    const imports = text.match(/from '\.[^']+'/g) || [];
     for (const spec of imports) {
-      assert.ok(spec.includes(`?v=${version}`), `${file} ${spec}`);
+      assert.ok(spec.includes(`?v=${version}`), `${path.relative(root, file)} ${spec}`);
     }
   }
 
@@ -31,4 +39,9 @@ test('version is shared and asset URLs stay relative', () => {
   const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
   assert.ok(sw.includes(`?v=${version}`));
   assert.ok(!sw.includes("'/js/") && !sw.includes('"/js/'));
+  const assets = [...sw.matchAll(/'\.\/([^']*)'/g)].map((match) => match[1].split('?')[0]);
+  for (const asset of assets) {
+    if (!asset) continue;
+    assert.ok(fs.existsSync(path.join(root, asset)), asset);
+  }
 });
