@@ -16,7 +16,7 @@ function trackErrors(page) {
 
 test('menu, gameplay and level progression', async ({ page }, testInfo) => {
   const errors = trackErrors(page);
-  await page.goto('/arkanoid/?e2e=1');
+  await page.goto('/arkanoid/?e2e=1#/arkanoid');
   await expect(page.getByRole('heading', { name: 'Арканоид' })).toBeVisible();
   if (testInfo.project.name === 'chromium') {
     await page.screenshot({ path: path.join(OUT, 'menu-neon.png') });
@@ -56,7 +56,7 @@ test('menu, gameplay and level progression', async ({ page }, testInfo) => {
 
 test('all four themes switch from settings without restarting the run', async ({ page }, testInfo) => {
   const errors = trackErrors(page);
-  await page.goto('/arkanoid/?e2e=1');
+  await page.goto('/arkanoid/?e2e=1#/arkanoid');
   await page.getByRole('button', { name: 'Играть' }).click();
   await expect(page.locator('#hud')).toBeVisible();
   const before = await page.evaluate(() => window.__ARKANOID__.snapshot());
@@ -116,7 +116,7 @@ function expectSameBrickSize(before, after) {
 
 test('brick rectangles keep their size across hits, themes and a small viewport change', async ({ page }) => {
   const errors = trackErrors(page);
-  await page.goto('/arkanoid/?e2e=1');
+  await page.goto('/arkanoid/?e2e=1#/arkanoid');
   await page.getByRole('button', { name: 'Играть' }).click();
   await page.waitForFunction(() => window.__ARKANOID__.brickRects().length > 20);
   await page.waitForTimeout(150);
@@ -146,7 +146,7 @@ test('brick rectangles keep their size across hits, themes and a small viewport 
 
 test('bonus and level toasts sit in the center of the playfield', async ({ page }, testInfo) => {
   const errors = trackErrors(page);
-  await page.goto('/arkanoid/?e2e=1');
+  await page.goto('/arkanoid/?e2e=1#/arkanoid');
   await page.getByRole('button', { name: 'Играть' }).click();
   await page.waitForFunction(() => window.__ARKANOID__.layout().scale > 0);
   await expect(page.locator('#banner')).toBeVisible();
@@ -185,6 +185,42 @@ test('bonus and level toasts sit in the center of the playfield', async ({ page 
   if (testInfo.project.name === 'webkit-mobile') {
     await page.screenshot({ path: path.join(OUT, 'toast-center-mobile.png') });
   }
+  expect(errors).toEqual([]);
+});
+
+test('hub lists puzzles and a pipe turn can be undone', async ({ page }, testInfo) => {
+  const errors = trackErrors(page);
+  await page.goto('/arkanoid/');
+  await expect(page.getByRole('heading', { name: 'Антистресс' })).toBeVisible();
+  for (const name of ['Трубы', 'Блоки', 'Сокобан', 'Water Sort', 'Перекрась', 'Арканоид']) {
+    await expect(page.getByRole('button', { name: new RegExp(name) })).toBeVisible();
+  }
+  if (testInfo.project.name === 'chromium') {
+    await page.screenshot({ path: path.join(OUT, 'hub-menu.png') });
+  }
+  if (testInfo.project.name === 'webkit-mobile') {
+    await page.screenshot({ path: path.join(OUT, 'hub-menu-mobile.png') });
+  }
+
+  await page.getByRole('button', { name: /Трубы/ }).click();
+  await expect(page.getByRole('heading', { name: 'Трубы' })).toBeVisible();
+  await page.locator('.pipe-tile:not([disabled])').first().click();
+  await expect(page.locator('#act-undo')).toBeEnabled();
+  await page.locator('#act-undo').click();
+  await page.getByRole('button', { name: 'К играм' }).click();
+  await expect(page.getByRole('heading', { name: 'Антистресс' })).toBeVisible();
+
+  await page.getByRole('button', { name: /Сокобан/ }).click();
+  await expect(page.locator('.soko-board')).toBeVisible();
+  await page.getByRole('button', { name: 'Вправо' }).click();
+  await expect(page.locator('#act-undo')).toBeEnabled();
+  if (testInfo.project.name === 'chromium') {
+    await page.screenshot({ path: path.join(OUT, 'hub-sokoban.png') });
+  }
+
+  const redirect = await page.request.get('/arkanoid/arkanoid.html');
+  expect(redirect.ok()).toBeTruthy();
+  expect(await redirect.text()).toContain('#/arkanoid');
   expect(errors).toEqual([]);
 });
 

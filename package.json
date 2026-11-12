@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/physics.test.js tests/version.test.js",
+    "test": "node --test tests/physics.test.js tests/version.test.js tests/puzzles.test.js",
     "test:e2e": "playwright test",
     "serve": "node tests/server.js"
   },

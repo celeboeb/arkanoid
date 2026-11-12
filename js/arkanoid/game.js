@@ -7,9 +7,9 @@ import {
   launchStuck,
   rampSpeed,
   stepWorld,
-} from './physics.js?v=1.0.4';
-import { LEVELS, createBricks } from './levels.js?v=1.0.4';
-import { PALETTES } from './themes.js?v=1.0.4';
+} from './physics.js?v=2.0.0';
+import { LEVELS, createBricks } from './levels.js?v=2.0.0';
+import { PALETTES } from './themes.js?v=2.0.0';
 
 const SPEED = { calm: 230, normal: 280, fast: 340 };
 const SPEED_CAP = 1.32;

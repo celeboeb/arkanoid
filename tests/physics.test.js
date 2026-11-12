@@ -14,8 +14,8 @@ import {
   rampSpeed,
   stepWorld,
   sweepCircleAABB,
-} from '../js/physics.js';
-import { createBricks, validateLevelDefs, LEVELS } from '../js/levels.js';
+} from '../js/arkanoid/physics.js';
+import { createBricks, validateLevelDefs, LEVELS } from '../js/arkanoid/levels.js';
 
 function mulberry32(seed) {
   let a = seed >>> 0;

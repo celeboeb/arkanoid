@@ -1,159 +1,247 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="neon">
+<html lang="ru" data-theme="light" data-app="hub">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#07060f" />
+  <meta name="theme-color" content="#f3efe8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Арканоид в браузере: 14 уровней, бонусы и четыре темы. Играет на компьютере и на телефоне." />
-  <title>Арканоид</title>
+  <meta name="description" content="Антистресс: спокойные головоломки и Арканоид. Работает офлайн, без таймеров и рекламы." />
+  <title>Антистресс</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link rel="stylesheet" href="./css/style.css?v=1.0.4" />
+  <link rel="stylesheet" href="./css/style.css?v=2.0.0" />
+  <link rel="stylesheet" href="./css/hub.css?v=2.0.0" />
 </head>
-<body data-theme="neon">
+<body data-theme="light" data-app="hub">
   <script>
-    try {
-      var saved = JSON.parse(localStorage.getItem('arkanoid-v1') || '{}');
-      var theme = saved.settings && saved.settings.theme;
-      if (theme === 'classic' || theme === 'space' || theme === 'minimal' || theme === 'neon') {
-        document.body.dataset.theme = theme;
-        document.documentElement.dataset.theme = theme;
+    (function () {
+      var hash = location.hash || '';
+      var game = hash.replace(/^#\/?/, '').split('/')[0];
+      var queryGame = '';
+      try { queryGame = new URLSearchParams(location.search).get('game') || ''; } catch (e) {}
+      if (game === 'arkanoid' || queryGame === 'arkanoid') {
+        document.documentElement.dataset.app = 'arkanoid';
+        document.body.dataset.app = 'arkanoid';
+        try {
+          var saved = JSON.parse(localStorage.getItem('arkanoid-v1') || '{}');
+          var theme = saved.settings && saved.settings.theme;
+          if (theme === 'classic' || theme === 'space' || theme === 'minimal' || theme === 'neon') {
+            document.documentElement.dataset.theme = theme;
+            document.body.dataset.theme = theme;
+          }
+        } catch (e) {}
+        return;
       }
-    } catch (error) {}
+      var mode = 'auto';
+      try {
+        var hub = JSON.parse(localStorage.getItem('antistress-v1') || '{}');
+        if (hub.settings && hub.settings.theme) mode = hub.settings.theme;
+      } catch (e) {}
+      var dark = mode === 'dark' || (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var tone = dark ? 'dark' : 'light';
+      document.documentElement.dataset.theme = tone;
+      document.documentElement.dataset.app = 'hub';
+      document.body.dataset.theme = tone;
+      document.body.dataset.app = 'hub';
+    })();
   </script>
-  <div id="app">
-    <canvas id="view" tabindex="0" aria-label="Игровое поле"></canvas>
-    <header id="hud" hidden>
-      <div class="stat"><span>Счёт</span><strong id="score-num">0</strong><em id="combo" hidden></em></div>
-      <div class="stat"><span>Уровень</span><strong id="level-num">1</strong></div>
-      <div class="stat lives"><span>Жизни</span><strong id="lives-num"></strong></div>
-      <div id="fx"></div>
-      <div class="hud-actions">
-        <button id="btn-pause" type="button">Пауза</button>
-        <button id="btn-hud-settings" type="button" aria-label="Настройки">Настройки</button>
-      </div>
-    </header>
-    <div id="notices">
-      <p id="banner" class="banner">
-        <strong id="banner-title"></strong>
-        <span id="banner-hint"></span>
-      </p>
-      <p id="toast" class="toast"></p>
-    </div>
-    <div id="screens">
-      <section id="screen-menu" class="screen" data-screen="menu">
-        <div class="card">
-          <p class="eyebrow">браузерная аркада</p>
-          <h1>Арканоид</h1>
-          <p class="lede">Разбейте кирпичи, ловите капсулы и не дайте мячу уйти.</p>
-          <div class="actions">
-            <button id="btn-play" class="primary" type="button">Играть</button>
-            <button id="btn-levels" type="button">Выбор уровня</button>
-            <button id="btn-settings" type="button">Настройки</button>
+  <div id="shell">
+    <div id="hub">
+      <div id="hub-scroll">
+        <header class="hub-top">
+          <div class="hub-actions">
+            <button id="menu-sound" class="icon-btn" type="button" aria-pressed="true">Звук</button>
+            <button id="menu-settings" type="button">Настройки</button>
           </div>
-          <dl class="help">
-            <div><dt>Мышь</dt><dd>ракетка следует за курсором</dd></div>
-            <div><dt>Палец</dt><dd>сдвиг в сторону, без прыжка к точке касания</dd></div>
-            <div><dt>Клавиши</dt><dd>← → или A / D, пробел — пуск, Esc — пауза</dd></div>
-          </dl>
-          <p class="record">Рекорд: <span id="menu-record">0</span></p>
-          <p class="ver" id="ver"></p>
-        </div>
-      </section>
-      <section id="screen-levels" class="screen" hidden>
-        <div class="card">
-          <h2>Уровни</h2>
-          <p class="lede">Открытые уровни можно переигрывать. Прогресс хранится на этом устройстве.</p>
-          <div id="level-grid" class="level-grid"></div>
-          <button id="btn-levels-back" type="button">Назад</button>
-        </div>
-      </section>
-      <section id="screen-settings" class="screen" hidden>
-        <div class="card">
+          <p class="card-kicker">спокойные игры</p>
+          <h1>Антистресс</h1>
+        </header>
+        <p class="lede">Головоломки без таймера и рекламы. Арканоид остаётся здесь же: те же уровни, физика и темы.</p>
+        <div id="menu"></div>
+        <section id="settings" hidden>
           <h2>Настройки</h2>
-          <div class="field">
-            <span id="label-theme">Тема</span>
-            <div class="choices" role="group" aria-labelledby="label-theme">
-              <button type="button" data-theme-pick="neon" aria-pressed="true">Неоновый ретро</button>
-              <button type="button" data-theme-pick="classic" aria-pressed="false">Классика 80-х</button>
-              <button type="button" data-theme-pick="space" aria-pressed="false">Космос</button>
-              <button type="button" data-theme-pick="minimal" aria-pressed="false">Минимализм</button>
+          <p class="lede">Оформление меню и головоломок. У Арканоида свои тема, звук и скорость — они внутри игры.</p>
+          <div class="check-row">
+            <label for="set-sound">Звук</label>
+            <input id="set-sound" type="checkbox" checked />
+          </div>
+          <div class="check-row">
+            <label for="set-vibrate">Вибрация</label>
+            <input id="set-vibrate" type="checkbox" checked />
+          </div>
+          <p id="label-theme">Оформление</p>
+          <div class="choice-row" role="group" aria-labelledby="label-theme">
+            <button type="button" data-theme-choice="auto" aria-pressed="true">Как в системе</button>
+            <button type="button" data-theme-choice="light" aria-pressed="false">Светлая</button>
+            <button type="button" data-theme-choice="dark" aria-pressed="false">Тёмная</button>
+          </div>
+          <button id="settings-back" type="button">Готово</button>
+        </section>
+        <p class="ver" id="ver-hub"></p>
+      </div>
+    </div>
+    <div id="play" hidden>
+      <header class="bar">
+        <button id="act-back" type="button">К играм</button>
+        <div>
+          <h2 id="play-title"></h2>
+          <p id="play-level"></p>
+        </div>
+        <button id="act-sound" class="icon-btn" type="button" aria-pressed="true">Звук</button>
+      </header>
+      <p id="play-help"></p>
+      <div id="play-stage"></div>
+      <p id="play-status"></p>
+      <div id="solved" hidden>
+        <p id="solved-text"></p>
+        <button id="act-next" type="button">Дальше</button>
+      </div>
+      <footer class="dock">
+        <button id="act-undo" type="button">Отменить</button>
+        <button id="act-restart" type="button">Заново</button>
+        <button id="act-levels" type="button">Уровни</button>
+      </footer>
+      <div id="level-sheet" hidden>
+        <button id="level-sheet-close" type="button">Закрыть</button>
+        <div id="level-grid-hub"></div>
+      </div>
+    </div>
+  </div>
+  <div id="game-arkanoid" hidden>
+    <div id="app">
+      <canvas id="view" tabindex="0" aria-label="Игровое поле"></canvas>
+      <header id="hud" hidden>
+        <div class="stat"><span>Счёт</span><strong id="score-num">0</strong><em id="combo" hidden></em></div>
+        <div class="stat"><span>Уровень</span><strong id="level-num">1</strong></div>
+        <div class="stat lives"><span>Жизни</span><strong id="lives-num"></strong></div>
+        <div id="fx"></div>
+        <div class="hud-actions">
+          <button id="btn-pause" type="button">Пауза</button>
+          <button id="btn-hud-settings" type="button" aria-label="Настройки">Настройки</button>
+        </div>
+      </header>
+      <div id="notices">
+        <p id="banner" class="banner">
+          <strong id="banner-title"></strong>
+          <span id="banner-hint"></span>
+        </p>
+        <p id="toast" class="toast"></p>
+      </div>
+      <div id="screens">
+        <section id="screen-menu" class="screen" data-screen="menu">
+          <div class="card">
+            <p class="eyebrow">браузерная аркада</p>
+            <h1>Арканоид</h1>
+            <p class="lede">Разбейте кирпичи, ловите капсулы и не дайте мячу уйти.</p>
+            <div class="actions">
+              <button id="btn-play" class="primary" type="button">Играть</button>
+              <button id="btn-levels" type="button">Выбор уровня</button>
+              <button id="btn-settings" type="button">Настройки</button>
+            </div>
+            <dl class="help">
+              <div><dt>Мышь</dt><dd>ракетка следует за курсором</dd></div>
+              <div><dt>Палец</dt><dd>сдвиг в сторону, без прыжка к точке касания</dd></div>
+              <div><dt>Клавиши</dt><dd>← → или A / D, пробел — пуск, Esc — пауза</dd></div>
+            </dl>
+            <p class="record">Рекорд: <span id="menu-record">0</span></p>
+            <p class="ver" id="ver"></p>
+            <button id="btn-to-hub" type="button">К играм</button>
+          </div>
+        </section>
+        <section id="screen-levels" class="screen" hidden>
+          <div class="card">
+            <h2>Уровни</h2>
+            <p class="lede">Открытые уровни можно переигрывать. Прогресс хранится на этом устройстве.</p>
+            <div id="level-grid" class="level-grid"></div>
+            <button id="btn-levels-back" type="button">Назад</button>
+          </div>
+        </section>
+        <section id="screen-settings" class="screen" hidden>
+          <div class="card">
+            <h2>Настройки</h2>
+            <div class="field">
+              <span id="label-theme-ark">Тема</span>
+              <div class="choices" role="group" aria-labelledby="label-theme-ark">
+                <button type="button" data-theme-pick="neon" aria-pressed="true">Неоновый ретро</button>
+                <button type="button" data-theme-pick="classic" aria-pressed="false">Классика 80-х</button>
+                <button type="button" data-theme-pick="space" aria-pressed="false">Космос</button>
+                <button type="button" data-theme-pick="minimal" aria-pressed="false">Минимализм</button>
+              </div>
+            </div>
+            <div class="field row">
+              <label for="opt-sound">Звук</label>
+              <input id="opt-sound" type="checkbox" checked />
+            </div>
+            <div class="field">
+              <label for="opt-volume">Громкость</label>
+              <input id="opt-volume" type="range" min="0" max="1" step="0.01" value="0.7" />
+            </div>
+            <div class="field">
+              <span id="label-speed">Скорость мяча</span>
+              <div class="choices" role="group" aria-labelledby="label-speed">
+                <button type="button" data-speed="calm" aria-pressed="false">Спокойно</button>
+                <button type="button" data-speed="normal" aria-pressed="true">Норма</button>
+                <button type="button" data-speed="fast" aria-pressed="false">Быстро</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="opt-sens">Чувствительность</label>
+              <input id="opt-sens" type="range" min="0.6" max="1.6" step="0.05" value="1" />
+            </div>
+            <div class="field row">
+              <label for="opt-vib">Вибрация</label>
+              <input id="opt-vib" type="checkbox" checked />
+            </div>
+            <button id="btn-settings-back" class="primary" type="button">Готово</button>
+          </div>
+        </section>
+        <section id="screen-pause" class="screen" hidden>
+          <div class="card">
+            <h2>Пауза</h2>
+            <p id="pause-level" class="lede"></p>
+            <div class="actions">
+              <button id="btn-resume" class="primary" type="button">Продолжить</button>
+              <button id="btn-pause-settings" type="button">Настройки</button>
+              <button id="btn-quit" type="button">В меню</button>
             </div>
           </div>
-          <div class="field row">
-            <label for="opt-sound">Звук</label>
-            <input id="opt-sound" type="checkbox" checked />
-          </div>
-          <div class="field">
-            <label for="opt-volume">Громкость</label>
-            <input id="opt-volume" type="range" min="0" max="1" step="0.01" value="0.7" />
-          </div>
-          <div class="field">
-            <span id="label-speed">Скорость мяча</span>
-            <div class="choices" role="group" aria-labelledby="label-speed">
-              <button type="button" data-speed="calm" aria-pressed="false">Спокойно</button>
-              <button type="button" data-speed="normal" aria-pressed="true">Норма</button>
-              <button type="button" data-speed="fast" aria-pressed="false">Быстро</button>
+        </section>
+        <section id="screen-over" class="screen" hidden>
+          <div class="card">
+            <h2>Игра окончена</h2>
+            <p>Счёт: <strong id="over-score">0</strong></p>
+            <p id="over-record"></p>
+            <div class="actions">
+              <button id="btn-retry" class="primary" type="button">Ещё раз</button>
+              <button id="btn-over-menu" type="button">В меню</button>
             </div>
           </div>
-          <div class="field">
-            <label for="opt-sens">Чувствительность</label>
-            <input id="opt-sens" type="range" min="0.6" max="1.6" step="0.05" value="1" />
+        </section>
+        <section id="screen-win" class="screen" hidden>
+          <div class="card">
+            <h2>Все уровни пройдены</h2>
+            <p class="lede">Поле чистое. Можно начать сначала.</p>
+            <p>Счёт: <strong id="win-score">0</strong></p>
+            <p id="win-record"></p>
+            <div class="actions">
+              <button id="btn-win-again" class="primary" type="button">Ещё раз</button>
+              <button id="btn-win-menu" type="button">В меню</button>
+            </div>
           </div>
-          <div class="field row">
-            <label for="opt-vib">Вибрация</label>
-            <input id="opt-vib" type="checkbox" checked />
+        </section>
+        <section id="screen-clear" class="screen" hidden>
+          <div class="card slim">
+            <h2>Уровень пройден</h2>
+            <p class="lede">Следующий уровень уже собирается.</p>
           </div>
-          <button id="btn-settings-back" class="primary" type="button">Готово</button>
-        </div>
-      </section>
-      <section id="screen-pause" class="screen" hidden>
-        <div class="card">
-          <h2>Пауза</h2>
-          <p id="pause-level" class="lede"></p>
-          <div class="actions">
-            <button id="btn-resume" class="primary" type="button">Продолжить</button>
-            <button id="btn-pause-settings" type="button">Настройки</button>
-            <button id="btn-quit" type="button">В меню</button>
-          </div>
-        </div>
-      </section>
-      <section id="screen-over" class="screen" hidden>
-        <div class="card">
-          <h2>Игра окончена</h2>
-          <p>Счёт: <strong id="over-score">0</strong></p>
-          <p id="over-record"></p>
-          <div class="actions">
-            <button id="btn-retry" class="primary" type="button">Ещё раз</button>
-            <button id="btn-over-menu" type="button">В меню</button>
-          </div>
-        </div>
-      </section>
-      <section id="screen-win" class="screen" hidden>
-        <div class="card">
-          <h2>Все уровни пройдены</h2>
-          <p class="lede">Поле чистое. Можно начать сначала.</p>
-          <p>Счёт: <strong id="win-score">0</strong></p>
-          <p id="win-record"></p>
-          <div class="actions">
-            <button id="btn-win-again" class="primary" type="button">Ещё раз</button>
-            <button id="btn-win-menu" type="button">В меню</button>
-          </div>
-        </div>
-      </section>
-      <section id="screen-clear" class="screen" hidden>
-        <div class="card slim">
-          <h2>Уровень пройден</h2>
-          <p class="lede">Следующий уровень уже собирается.</p>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   </div>
   <noscript>Нужен JavaScript, чтобы играть.</noscript>
-  <script type="module" src="./js/main.js?v=1.0.4"></script>
+  <script type="module" src="./js/hub/main.js?v=2.0.0"></script>
 </body>
 </html>
