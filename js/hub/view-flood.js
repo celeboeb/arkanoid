@@ -1,5 +1,5 @@
-import { createHistory } from '../puzzles/history.js?v=2.0.0';
-import { FLOOD_COUNT, cloneBoard, flood, generateFlood, isUniform } from '../puzzles/flood.js?v=2.0.0';
+import { createHistory } from '../puzzles/history.js?v=2.1.0';
+import { FLOOD_COUNT, cloneBoard, flood, generateFlood, isUniform } from '../puzzles/flood.js?v=2.1.0';
 
 const PAINT = ['#e07a7a', '#e0b15c', '#7fbf8a', '#6eb0d4', '#8d87d1', '#d58ab4'];
 
@@ -10,7 +10,7 @@ function copy(board) {
 export const floodGame = {
   id: 'flood',
   title: 'Перекрась',
-  blurb: 'Закрасьте поле одним цветом из левого верхнего угла. Ходы ограничены, времени нет.',
+  blurb: 'Красьте с левого верхнего угла. Ходы никуда не деваются.',
   count: FLOOD_COUNT,
   win: 'Поле одного цвета',
   mount(stage, ctx) {
@@ -28,6 +28,8 @@ export const floodGame = {
       ctx.save({ board: copy(board), used, history: history.dump() });
     }
 
+    let previous = null;
+
     function draw() {
       stage.replaceChildren();
       const wrap = document.createElement('div');
@@ -39,6 +41,7 @@ export const floodGame = {
         for (let x = 0; x < puzzle.size; x++) {
           const cell = document.createElement('i');
           cell.style.background = PAINT[board[y][x] % PAINT.length];
+          if (previous && previous[y][x] !== board[y][x]) cell.style.setProperty('--delay', `${(x + y) * 28}ms`);
           if (x === 0 && y === 0) cell.className = 'origin';
           grid.append(cell);
         }
@@ -48,6 +51,7 @@ export const floodGame = {
       for (let color = 0; color < puzzle.colors; color++) {
         const button = document.createElement('button');
         button.type = 'button';
+        button.className = 'swatch';
         button.style.background = PAINT[color];
         button.setAttribute('aria-label', `Цвет ${color + 1}`);
         button.disabled = color === board[0][0];
@@ -56,20 +60,15 @@ export const floodGame = {
       }
       wrap.append(grid, palette);
       stage.append(wrap);
+      previous = copy(board);
       const solved = isUniform(board);
-      const left = Math.max(0, puzzle.limit - used);
-      if (solved) ctx.status('Поле закрашено');
-      else if (left === 0) ctx.status('Ходы кончились. Отмените ход или начните заново');
-      else ctx.status(`Осталось ходов: ${left}`);
+      ctx.status(solved ? 'Поле закрашено' : `Ходы: ${used}`);
       ctx.changed();
       ctx.solved(solved);
     }
 
     function paint(color) {
-      if (isUniform(board) || color === board[0][0] || used >= puzzle.limit) {
-        if (used >= puzzle.limit && !isUniform(board)) ctx.sound('soft');
-        return;
-      }
+      if (isUniform(board) || color === board[0][0]) return;
       history.checkpoint({ board: copy(board), used });
       board = flood(board, color);
       used += 1;
@@ -77,7 +76,6 @@ export const floodGame = {
       ctx.buzz(8);
       persist();
       draw();
-      if (!isUniform(board) && used >= puzzle.limit) ctx.sound('soft');
     }
 
     draw();

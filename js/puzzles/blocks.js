@@ -60,8 +60,9 @@ function connected(mask) {
 }
 
 function boardSize(level) {
-  if (level < 4) return [4, 4];
-  if (level < 10) return [5, 4];
+  if (level < 2) return [3, 3];
+  if (level < 6) return [4, 4];
+  if (level < 12) return [5, 4];
   if (level < 18) return [5, 5];
   if (level < 26) return [6, 5];
   return [6, 6];

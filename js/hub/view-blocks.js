@@ -1,5 +1,5 @@
-import { canPlace, generateBlocks, isFilled, pieceCells, rotateCells, BLOCKS_COUNT } from '../puzzles/blocks.js?v=2.0.0';
-import { createHistory } from '../puzzles/history.js?v=2.0.0';
+import { canPlace, generateBlocks, isFilled, pieceCells, rotateCells, BLOCKS_COUNT } from '../puzzles/blocks.js?v=2.1.0';
+import { createHistory } from '../puzzles/history.js?v=2.1.0';
 
 const COLORS = ['#e3a3a0', '#e3c48a', '#b7d3a8', '#93c9c6', '#a9c0e4', '#c6b4e2', '#e3b4cc', '#d2c2a4'];
 
@@ -29,7 +29,7 @@ function cellsHtml(cells, color) {
 export const blocksGame = {
   id: 'blocks',
   title: 'Блоки',
-  blurb: 'Перетащите фигуры на поле. Короткое нажатие поворачивает.',
+  blurb: 'Перетащите фигуры. Короткое нажатие поворачивает.',
   count: BLOCKS_COUNT,
   win: 'Поле собрано',
   mount(stage, ctx) {
@@ -65,13 +65,14 @@ export const blocksGame = {
     }
 
     let boardEl = null;
+    let snap = false;
 
     function draw() {
       stage.replaceChildren();
       const wrap = document.createElement('div');
       wrap.className = 'block-layout';
       const board = document.createElement('div');
-      board.className = 'block-board';
+      board.className = snap ? 'block-board pop' : 'block-board';
       board.style.setProperty('--w', String(level.w));
       board.style.setProperty('--h', String(level.h));
       const paint = new Map();
@@ -110,6 +111,7 @@ export const blocksGame = {
       ctx.status(filled ? 'Фигуры легли без пробелов' : 'Заполните силуэт целиком');
       ctx.changed();
       ctx.solved(filled);
+      snap = false;
     }
 
     function bindPiece(button, piece) {
@@ -191,6 +193,7 @@ export const blocksGame = {
               piece.placed = true;
               piece.x = col;
               piece.y = row;
+              snap = true;
               ctx.sound('place');
               ctx.buzz(10);
               persist();

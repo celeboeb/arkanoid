@@ -1,10 +1,10 @@
-import { VERSION } from '../version.js?v=2.0.0';
-import { SIM_DT } from './physics.js?v=2.0.0';
-import { THEME_COLOR } from './themes.js?v=2.0.0';
-import { createGame } from './game.js?v=2.0.0';
-import { createRenderer } from './render.js?v=2.0.0';
-import { createAudio } from './audio.js?v=2.0.0';
-import { loadState, saveState } from './storage.js?v=2.0.0';
+import { VERSION } from '../version.js?v=2.1.0';
+import { SIM_DT } from './physics.js?v=2.1.0';
+import { THEME_COLOR } from './themes.js?v=2.1.0';
+import { createGame } from './game.js?v=2.1.0';
+import { createRenderer } from './render.js?v=2.1.0';
+import { createAudio } from './audio.js?v=2.1.0';
+import { loadState, saveState } from './storage.js?v=2.1.0';
 
 const saved = loadState();
 const settings = saved.settings;
